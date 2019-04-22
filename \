@@ -51,12 +51,6 @@ function game:update(dt)
         game.player.x = game.player.x + math.cos(game.player.rot - math.pi/2) * CONFIG.PLAYER_SPEED * dt
         game.player.y = game.player.y + math.sin(game.player.rot - math.pi/2) * CONFIG.PLAYER_SPEED * dt
     end
-    if love.keyboard.isDown("2") then
-        CONFIG.FOV = CONFIG.FOV - math.pi / 180
-    end
-    if love.keyboard.isDown("3") then
-        CONFIG.FOV = CONFIG.FOV + math.pi / 180
-    end
 
     -- collision detection
     if game:isWall(game.player) then
@@ -109,8 +103,14 @@ function render_scene_sq(w,h)
         local dist, side = game:getDistanceToObstacle(rot)
 
         -- only difference from before is a correction to dist:
+        local p = CONFIG.NODE_SIZE*0.3
+
+        --dist = dist - 1--math.sqrt((r*math.cos(rot) - p)^2 + (r*math.sin(rot) - p*math.tan(rot))^2)
+        --print(0.999999*math.sqrt((r*math.cos(rot) - p)^2 + (r*math.sin(rot) - p*math.tan(rot))^2))
+        --dist = dist + CONFIG.NODE_SIZE*math.sqrt((r*math.cos(rot) - p)^2 + (r*math.sin(rot) - p*math.tan(rot))^2)
         local ang = (i - w/2) * CONFIG.FOV/w
-        dist = dist * math.cos(ang)
+
+        dist = dist - p*math.sqrt(1 +(math.tan(ang))^2)
 
         local shadow = math.min(dist/CONFIG.SHADOW_SIZE,0.5)
         if side == "x" then
@@ -170,8 +170,6 @@ function game:draw()
     local t2 = os.clock()
     local fps = string.format("FPS: %.0f", 1/(t2 - t1))
     love.graphics.print(fps, w - 100, 10)
-    love.graphics.print("Render mode: " .. CONFIG.RENDER_MODE, w - 120, 25)
-    love.graphics.print("FOV: " .. CONFIG.FOV/math.pi*180 .. " degrees", w - 120, 40)
 end
 
 function game:getDistanceToObstacle(angle)
@@ -198,10 +196,18 @@ function game:getDistanceToObstacle(angle)
 
             local angle_in = math.atan(dy/dx) + math.pi/4
 
-            if math.tan(angle_in) > 0 then
-                return distance_so_far, "x"
+            if CONFIG.FISH_EYE_CORRECTION then
+                if math.tan(angle_in) > 0 then
+                    return distance_so_far * math.cos((angle - game.player.rot) * CONFIG.FISH_EYE_FACTOR), "x"
+                else
+                    return distance_so_far * math.cos((angle - game.player.rot) * CONFIG.FISH_EYE_FACTOR), "y"
+                end
             else
-                return distance_so_far, "y"
+                if math.tan(angle_in) > 0 then
+                    return distance_so_far, "x"
+                else
+                    return distance_so_far, "y"
+                end
             end
         else
             current_pos.x = current_pos.x + dp.x
@@ -227,7 +233,7 @@ function game:keypressed(key)
     if key == "escape" then
         love.event.quit()
     elseif key == "1" then
-        if CONFIG.RENDER_MODE == "sq" then
+        if CONFIG.RENDER_MODE = "sq" then
             CONFIG.RENDER_MODE = "cyl"
         else
             CONFIG.RENDER_MODE = "sq"

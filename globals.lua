@@ -18,9 +18,10 @@ CONFIG = {
     JUMP_SPEED = 200,
     GRAV_ACC = -200,
     -- 4 * math.pi
-    FOV = math.pi/2,
+    FOV = math.pi / 180 * 74,
     FOV_TRIANGLE_SIZE = 40,
     FOV_SPEED = 100 / 180 * math.pi,
-    FISH_EYE_CORRECTION = false,
-    FISH_EYE_FACTOR = 0.88
+
+    RENDER_MODE = "sq", -- one of "sq" and "cyl"
+    CORRECTION_COEFF = 1
 }
