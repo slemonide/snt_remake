@@ -142,14 +142,19 @@ function render_map()
     love.graphics.setColor(0.42, 0.63, 0.05)
     love.graphics.circle("fill", game.player.x, game.player.y, CONFIG.NODE_SIZE/4)
 
-    love.graphics.setColor(0, 1, 0)
-    for i=-50,50 do
-        local rot = game.player.rot + i * CONFIG.FOV/100
+    for i=-5,5 do
+        local rot = game.player.rot + i * CONFIG.FOV/10
 
-        dist = game:getDistanceToObstacle(rot)
+        dist, side, points = game:getDistanceToObstacle(rot)
+        love.graphics.setColor(0, 1, 0)
         love.graphics.line(game.player.x, game.player.y,
             game.player.x + math.cos(rot) * dist,
             game.player.y + math.sin(rot) * dist)
+
+        for _, point in ipairs(points) do
+            love.graphics.setColor(1,0,0)
+            love.graphics.circle("fill", point.x, point.y, 4)
+        end
     end
 end
 
@@ -169,27 +174,123 @@ function game:draw()
     -- compute FPS
     local t2 = os.clock()
     local fps = string.format("FPS: %.0f", 1/(t2 - t1))
-    love.graphics.print(fps, w - 100, 10)
-    love.graphics.print("Render mode: " .. CONFIG.RENDER_MODE, w - 120, 25)
-    love.graphics.print("FOV: " .. CONFIG.FOV/math.pi*180 .. " degrees", w - 120, 40)
+    
+    local disp_cnt = 0
+    local function disp(text)
+        love.graphics.print(text, w - 140, 10 + 15*disp_cnt)
+        disp_cnt = disp_cnt + 1
+    end
+
+    disp(fps)
+    disp("Render mode: " .. CONFIG.RENDER_MODE)
+    disp("FOV: " .. CONFIG.FOV/math.pi*180 .. " degrees")
+    disp(string.format("Position: %.0f, %.0f", game.player.x, game.player.y))
+    disp(string.format("Angle: %.0f degrees", game.player.rot/math.pi*180))
+
 end
 
 function game:getDistanceToObstacle(angle)
-    local distance_so_far = 0
+    local points = {}
 
     local current_pos = {
         x = game.player.x,
         y = game.player.y
     }
 
-    local step = 0.5
-    local dp = {
-        x = step * math.cos(angle),
-        y = step * math.sin(angle)
-    }
+    function distance()
+        return math.sqrt((current_pos.x - game.player.x)^2 + (current_pos.y - game.player.y)^2)
+    end
 
-    for i=1,1000 do
-            local isWall, ind = game:isWall(current_pos)
+    angle = angle % (2*math.pi)
+
+    for i=1,500 do
+        current_pos.x = current_pos.x + eps * math.cos(angle)
+        current_pos.y = current_pos.y + eps * math.sin(angle)
+
+        local x_i = math.floor(current_pos.x / CONFIG.NODE_SIZE)
+        local y_i = math.floor(current_pos.y / CONFIG.NODE_SIZE)
+
+        if (angle >= 0 and angle < math.pi/2) then
+            local x_a = (x_i + 1) * CONFIG.NODE_SIZE
+            local y_a = (y_i + 1) * CONFIG.NODE_SIZE
+
+            local dx = x_a - current_pos.x
+            local dy = y_a - current_pos.y
+
+            local a_angle = math.atan(dy/dx)
+
+            if (angle < a_angle) then
+                current_pos.x = x_a
+                current_pos.y = current_pos.y + dx * math.tan(angle)
+            else
+                current_pos.x = current_pos.x + dy * math.tan(math.pi/2 - angle)
+                current_pos.y = y_a
+            end
+
+        elseif (angle >= math.pi/2 and angle < math.pi) then
+            local x_a = (x_i) * CONFIG.NODE_SIZE
+            local y_a = (y_i + 1) * CONFIG.NODE_SIZE
+
+            local dx = current_pos.x - x_a
+            local dy = y_a - current_pos.y
+
+            local a_angle = math.atan(dx/dy)
+
+            local langle = angle - math.pi/2
+
+            if (langle < a_angle) then
+                current_pos.x = current_pos.x - dy * math.tan(langle)
+                current_pos.y = y_a
+            else
+                current_pos.x = x_a
+                current_pos.y = current_pos.y + dx * math.tan(math.pi/2 - langle)
+            end
+
+        elseif (angle >= math.pi and angle < math.pi * 3/2) then
+            local x_a = (x_i) * CONFIG.NODE_SIZE
+            local y_a = (y_i) * CONFIG.NODE_SIZE
+
+            local dx = current_pos.x - x_a
+            local dy = current_pos.y - y_a
+
+            local a_angle = math.atan(dy/dx)
+
+            local langle = angle - math.pi
+
+            if (langle < a_angle) then
+                current_pos.x = x_a
+                current_pos.y = current_pos.y - dx * math.tan(langle)
+            else
+                current_pos.x = current_pos.x - dy * math.tan(math.pi/2 - langle)
+                current_pos.y = y_a
+            end
+        elseif (angle >= math.pi * 3/2 and angle < math.pi * 2) then
+            local x_a = (x_i + 1) * CONFIG.NODE_SIZE
+            local y_a = (y_i) * CONFIG.NODE_SIZE
+
+            local dx = x_a - current_pos.x
+            local dy = current_pos.y - y_a
+
+            local a_angle = math.atan(dx/dy)
+
+            local langle = angle - math.pi * 3/2
+
+            if (langle < a_angle) then
+                current_pos.x = current_pos.x + dy * math.tan(langle)
+                current_pos.y = y_a
+            else
+                current_pos.x = x_a
+                current_pos.y = current_pos.y - dx * math.tan(math.pi/2 - langle)
+            end
+        else
+            return distance(), "x", points
+        end
+
+        table.insert(points, {x=current_pos.x, y=current_pos.y})
+
+        local eps = 0.001
+        local isWall, ind = game:isWall({x = current_pos.x + eps * math.cos(angle),
+                                         y = current_pos.y + eps * math.sin(angle)})
         if isWall then
             local wallY = math.floor(ind / CONFIG.WORLD_SIZE) * CONFIG.NODE_SIZE
             local wallX = (ind % CONFIG.WORLD_SIZE) * CONFIG.NODE_SIZE
@@ -199,18 +300,14 @@ function game:getDistanceToObstacle(angle)
             local angle_in = math.atan(dy/dx) + math.pi/4
 
             if math.tan(angle_in) > 0 then
-                return distance_so_far, "x"
+                return distance(), "x", points
             else
-                return distance_so_far, "y"
+                return distance(), "y", points
             end
-        else
-            current_pos.x = current_pos.x + dp.x
-            current_pos.y = current_pos.y + dp.y
-            distance_so_far = distance_so_far + step
         end
     end
 
-    return distance_so_far, "x"
+    return distance(), "x", points
 end
 
 function game:isWall(pos)

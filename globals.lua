@@ -10,8 +10,10 @@ Gamestate = require "lib.hump.gamestate"
 states = {}
 states.game =      require "game"
 
+eps = 0.0001 -- just a small number
+
 CONFIG = {
-    NODE_SIZE = 20,
+    NODE_SIZE = 15,
     SHADOW_SIZE = 300,
     WORLD_SIZE = 10,
     PLAYER_SPEED = 100,
