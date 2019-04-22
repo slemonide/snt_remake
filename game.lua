@@ -5,16 +5,26 @@ function game:init()
     -- 0 is floor
     -- 1 is wall
     game.world = {
-    1,1,1,1,1,1,1,1,1,1,
-    1,0,0,0,1,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,1,
-    1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
     }
 
     -- player's state
@@ -123,6 +133,10 @@ function render_scene_sq(w,h)
 end
 
 function render_map()
+    love.graphics.push()
+    love.graphics.scale(CONFIG.MAP_NODE_SIZE / CONFIG.NODE_SIZE,
+                        CONFIG.MAP_NODE_SIZE / CONFIG.NODE_SIZE)
+
     for i,v in ipairs(game.world) do
         x = ((i - 1) % CONFIG.WORLD_SIZE) * CONFIG.NODE_SIZE
         y = (math.floor((i - 1) / CONFIG.WORLD_SIZE)) * CONFIG.NODE_SIZE
@@ -153,9 +167,11 @@ function render_map()
 
         for _, point in ipairs(points) do
             love.graphics.setColor(1,0,0)
-            love.graphics.circle("fill", point.x, point.y, 4)
+            love.graphics.circle("fill", point.x, point.y, 1.5)
         end
     end
+
+    love.graphics.pop()
 end
 
 function game:draw()
@@ -169,7 +185,9 @@ function game:draw()
     else
         render_scene_sq(w,h)
     end
-    render_map()
+    if CONFIG.DISPLAY_MAP then
+        render_map()
+    end
 
     -- compute FPS
     local t2 = os.clock()
@@ -181,6 +199,7 @@ function game:draw()
         disp_cnt = disp_cnt + 1
     end
 
+    love.graphics.setColor(1,0,0)
     disp(fps)
     disp("Render mode: " .. CONFIG.RENDER_MODE)
     disp("FOV: " .. CONFIG.FOV/math.pi*180 .. " degrees")
@@ -329,6 +348,8 @@ function game:keypressed(key)
         else
             CONFIG.RENDER_MODE = "sq"
         end
+    elseif key == "tab" then
+        CONFIG.DISPLAY_MAP = not CONFIG.DISPLAY_MAP
     end
 end
 
