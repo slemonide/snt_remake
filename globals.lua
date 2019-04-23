@@ -13,7 +13,7 @@ states.game =      require "game"
 eps = 0.0001 -- just a small number
 
 CONFIG = {
-    NODE_SIZE = 15,
+    NODE_SIZE = 30, -- 15
     MAP_NODE_SIZE = 30,
     SHADOW_SIZE = 300,
     WORLD_SIZE = 20,

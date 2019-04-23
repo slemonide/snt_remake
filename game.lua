@@ -1,22 +1,13 @@
 local game = {}
 
 function game:init()
-    -- 10x10 world
+    -- 20x20 world
     -- 0 is floor
     -- 1 is wall
     game.world = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
-    1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
@@ -24,7 +15,16 @@ function game:init()
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     }
 
     -- player's state
@@ -143,6 +143,9 @@ function render_map()
         if v == 1 then
             love.graphics.setColor(0.70, 0.63, 0.05)
             love.graphics.rectangle("fill", x, y, CONFIG.NODE_SIZE, CONFIG.NODE_SIZE)
+        elseif v == 2 then
+            love.graphics.setColor(0.06, 0.63, 0.70)
+            love.graphics.rectangle("fill", x, y, CONFIG.NODE_SIZE, CONFIG.NODE_SIZE)
         end
         love.graphics.setColor(1, 1, 1)
         love.graphics.rectangle("line", x, y, CONFIG.NODE_SIZE, CONFIG.NODE_SIZE)
@@ -167,7 +170,7 @@ function render_map()
 
         for _, point in ipairs(points) do
             love.graphics.setColor(1,0,0)
-            love.graphics.circle("fill", point.x, point.y, 1.5)
+            love.graphics.circle("fill", point.x, point.y, 3)
         end
     end
 
@@ -216,13 +219,21 @@ function game:getDistanceToObstacle(angle)
         y = game.player.y
     }
 
+    local prev_pos = {}
+
+    local distance = 0
+    --[[
     function distance()
         return math.sqrt((current_pos.x - game.player.x)^2 + (current_pos.y - game.player.y)^2)
     end
+    --]]
 
     angle = angle % (2*math.pi)
 
     for i=1,500 do
+        prev_pos.x = current_pos.x
+        prev_pos.y = current_pos.y
+
         current_pos.x = current_pos.x + eps * math.cos(angle)
         current_pos.y = current_pos.y + eps * math.sin(angle)
 
@@ -302,15 +313,23 @@ function game:getDistanceToObstacle(angle)
                 current_pos.y = current_pos.y - dx * math.tan(math.pi/2 - langle)
             end
         else
-            return distance(), "x", points
+            print("Incorrect angle " .. angle)
+            --return distance(), "x", points
         end
+
+        distance = distance + math.sqrt((current_pos.x - prev_pos.x)^2 + (current_pos.y - prev_pos.y)^2)
 
         table.insert(points, {x=current_pos.x, y=current_pos.y})
 
         local eps = 0.001
         local isWall, ind = game:isWall({x = current_pos.x + eps * math.cos(angle),
                                          y = current_pos.y + eps * math.sin(angle)})
-        if isWall then
+
+        local isMirror, ind = game:isMirror({x = current_pos.x + eps * math.cos(angle),
+                                         y = current_pos.y + eps * math.sin(angle)})
+        if isMirror then
+            angle = math.pi/2 - (angle - math.pi)
+        elseif isWall then
             local wallY = math.floor(ind / CONFIG.WORLD_SIZE) * CONFIG.NODE_SIZE
             local wallX = (ind % CONFIG.WORLD_SIZE) * CONFIG.NODE_SIZE
             local dx = current_pos.x - wallX + CONFIG.NODE_SIZE/2
@@ -319,20 +338,30 @@ function game:getDistanceToObstacle(angle)
             local angle_in = math.atan(dy/dx) + math.pi/4
 
             if math.tan(angle_in) > 0 then
-                return distance(), "x", points
+                return distance, "x", points
             else
-                return distance(), "y", points
+                return distance, "y", points
             end
         end
     end
 
-    return distance(), "x", points
+    return distance, "x", points
 end
 
 function game:isWall(pos)
     i = math.ceil(pos.x / CONFIG.NODE_SIZE) +
         math.floor((pos.y / CONFIG.NODE_SIZE)) * CONFIG.WORLD_SIZE
-    if game.world[i] == 1 then
+    if game.world[i] ~= 0 then
+        return true, i
+    else
+        return false, i
+    end
+end
+
+function game:isMirror(pos)
+    i = math.ceil(pos.x / CONFIG.NODE_SIZE) +
+        math.floor((pos.y / CONFIG.NODE_SIZE)) * CONFIG.WORLD_SIZE
+    if game.world[i] == 2 then
         return true, i
     else
         return false, i
