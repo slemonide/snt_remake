@@ -1,24 +1,29 @@
 local game = {}
 
 function game:init()
+    -- textures
+    love.graphics.setDefaultFilter("nearest")
+    game.wall = love.graphics.newImage("assets/wall.png")
+    game.wall_quad = love.graphics.newQuad(0, 0, 1, 64, 64, 64)
+
     -- 20x20 world
     -- 0 is floor
     -- 1 is wall
     game.world = {
-    2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    2,0,0,1,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,1,
-    2,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,1,
-    2,0,0,0,0,0,2,1,1,1,1,1,1,1,0,0,0,0,0,1,
-    2,2,2,2,2,2,2,2,2,2,2,2,2,1,0,0,0,0,0,1,
-    1,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,
-    1,0,0,0,0,1,2,2,2,2,0,0,0,2,1,0,0,0,0,1,
-    1,0,0,0,0,0,1,1,1,1,0,0,0,2,1,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,1,2,2,2,1,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
@@ -106,38 +111,31 @@ function game:update(dt)
     end
 end
 
-function render_scene_fisheye(w,h)
+function render_scene(w,h)
     for i=1,w do
         local rot = game.player.rot + (i - w/2) * CONFIG.FOV/w
 
-        local dist, side = game:getDistanceToObstacle(rot)
-        local shadow = math.min(dist/CONFIG.SHADOW_SIZE,0.5)
-        if side == "x" then
-            love.graphics.setColor(0.6-shadow,0.6-shadow,0.6-shadow)
-        elseif side == "y" then
-            love.graphics.setColor(0.55-shadow, 0.55-shadow,0.55-shadow)
-        end
-        love.graphics.line(i, game.player.z + h/2 - 10000/dist, i, game.player.z + h/2 + 10000/dist)
-    end
-end
-
-function render_scene_no_fisheye(w,h)
-    for i=1,w do
-        local rot = game.player.rot + (i - w/2) * CONFIG.FOV/w
-
-        local dist, side = game:getDistanceToObstacle(rot)
-
+        local dist, side, points, offset = game:getDistanceToObstacle(rot)
         -- only difference from before is a correction to dist:
-        local ang = (i - w/2) * CONFIG.FOV/w
-        dist = dist * math.cos(ang)
-
-        local shadow = math.min(dist/CONFIG.SHADOW_SIZE,0.5)
+        if not CONFIG.FISH_EYE then
+            local ang = (i - w/2) * CONFIG.FOV/w
+            dist = dist * math.cos(ang)
+        end
+        local shadow = math.min(dist/CONFIG.SHADOW_SIZE/10,0.5)
         if side == "x" then
+            --love.graphics.setColor((0.6-shadow)*offset/CONFIG.NODE_SIZE,0.6-shadow,0.6-shadow)
             love.graphics.setColor(0.6-shadow,0.6-shadow,0.6-shadow)
         elseif side == "y" then
+            ---love.graphics.setColor((0.55-shadow)*offset/CONFIG.NODE_SIZE, 0.55-shadow,0.55-shadow)
             love.graphics.setColor(0.55-shadow, 0.55-shadow,0.55-shadow)
         end
-        love.graphics.line(i, game.player.z + h/2 - 10000/dist, i, game.player.z + h/2 + 10000/dist)
+        game.wall_quad:setViewport(64*offset/CONFIG.NODE_SIZE,0,1,64)
+        --love.graphics.draw(game.wall, game.wall_quad, i, -500 + game.player.z + h/2, 0, 1, 2000/dist, 0, 0)
+        --love.graphics.draw(game.wall, game.wall_quad, i, game.player.z + h/2 - 10000/dist, 0, 1, 1000/dist, 0, 0)
+        love.graphics.draw(game.wall, game.wall_quad, i,
+                        game.player.z + h/2 - 10000/dist - 300, 0, 1, 1000/dist, 0, 0)
+
+--        love.graphics.line(i, game.player.z + h/2 - 10000/dist, i, game.player.z + h/2 + 10000/dist)
     end
 end
 
@@ -203,11 +201,8 @@ function game:draw()
     local w = love.graphics.getWidth()
     local h = love.graphics.getHeight()
 
-    if CONFIG.FISHEYE then
-        render_scene_fisheye(w,h)
-    else
-        render_scene_no_fisheye(w,h)
-    end
+    render_scene(w,h)
+
     if CONFIG.DISPLAY_MAP then
         render_map()
     end
@@ -224,11 +219,11 @@ function game:draw()
 
     love.graphics.setColor(1,0,0)
     disp(fps)
-    disp("Fisheye: " .. (CONFIG.FISHEYE and "on" or "off"))
+    disp("Fisheye: " .. (CONFIG.FISH_EYE and "on" or "off"))
     disp(string.format("FOV: %.0f degrees", CONFIG.FOV/math.pi*180))
     disp("Map num rays: " .. CONFIG.MAP_NUM_RAYS)
     disp(string.format("Position: %.0f, %.0f", game.player.x, game.player.y))
-    disp(string.format("Angle: %.0f degrees", game.player.rot/math.pi*180))
+    disp(string.format("Angle: %.0f degrees", (game.player.rot/math.pi*180) % 360))
 
 end
 
@@ -246,7 +241,7 @@ function game:getDistanceToObstacle(angle)
 
     angle = angle % (2*math.pi)
 
-    for i=1,500 do
+    for i=1,1000 do
         prev_pos.x = current_pos.x
         prev_pos.y = current_pos.y
 
@@ -374,15 +369,16 @@ function game:getDistanceToObstacle(angle)
 
             local angle_in = math.atan(dy/dx) + math.pi/4
 
+            local offset = math.sqrt((wallX - current_pos.x)^2 + (wallY - current_pos.y)^2)
             if math.tan(angle_in) > 0 then
-                return distance, "x", points
+                return distance, "x", points, offset
             else
-                return distance, "y", points
+                return distance, "y", points, offset
             end
         end
     end
 
-    return distance, "x", points
+    return distance, "x", points, 0
 end
 
 function game:isWall(pos)
@@ -409,7 +405,7 @@ function game:keypressed(key)
     if key == "escape" then
         love.event.quit()
     elseif key == "f" then
-        CONFIG.FISHEYE = not CONFIG.FISHEYE
+        CONFIG.FISH_EYE = not CONFIG.FISH_EYE
     elseif key == "tab" then
         CONFIG.DISPLAY_MAP = not CONFIG.DISPLAY_MAP
     end
