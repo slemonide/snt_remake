@@ -25,6 +25,7 @@ CONFIG = {
     FOV_TRIANGLE_SIZE = 20,
     FOV_SPEED = 100 / 180 * math.pi,
     DISPLAY_MAP = true,
+    MAP_NUM_RAYS = 5,
 
     RENDER_MODE = "sq", -- one of "sq" and "cyl"
     CORRECTION_COEFF = 1

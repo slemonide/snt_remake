@@ -5,18 +5,18 @@ function game:init()
     -- 0 is floor
     -- 1 is wall
     game.world = {
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    2,0,0,1,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,1,
+    2,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,1,
+    2,0,0,0,0,0,2,1,1,1,1,1,1,1,0,0,0,0,0,1,
+    1,2,2,2,2,2,2,2,2,2,2,2,2,1,0,0,0,0,0,1,
+    1,0,0,0,1,2,0,0,0,0,0,0,0,2,1,0,0,0,0,1,
+    1,0,0,0,0,1,2,2,2,2,0,0,0,2,1,0,0,0,0,1,
+    1,0,0,0,0,0,1,1,1,1,0,0,0,2,1,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,1,2,2,2,1,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
@@ -61,11 +61,20 @@ function game:update(dt)
         game.player.x = game.player.x + math.cos(game.player.rot - math.pi/2) * CONFIG.PLAYER_SPEED * dt
         game.player.y = game.player.y + math.sin(game.player.rot - math.pi/2) * CONFIG.PLAYER_SPEED * dt
     end
-    if love.keyboard.isDown("2") then
+    if love.keyboard.isDown("-") then
         CONFIG.FOV = CONFIG.FOV - math.pi / 180
     end
-    if love.keyboard.isDown("3") then
+    if love.keyboard.isDown("=") then
         CONFIG.FOV = CONFIG.FOV + math.pi / 180
+    end
+    if love.keyboard.isDown("[") then
+        CONFIG.MAP_NUM_RAYS = CONFIG.MAP_NUM_RAYS - 1
+        if CONFIG.MAP_NUM_RAYS < 0 then
+            CONFIG.MAP_NUM_RAYS = 0
+        end
+    end
+    if love.keyboard.isDown("]") then
+        CONFIG.MAP_NUM_RAYS = CONFIG.MAP_NUM_RAYS + 1
     end
 
     -- collision detection
@@ -97,7 +106,7 @@ function game:update(dt)
     end
 end
 
-function render_scene_cyl(w,h)
+function render_scene_fisheye(w,h)
     for i=1,w do
         local rot = game.player.rot + (i - w/2) * CONFIG.FOV/w
 
@@ -112,7 +121,7 @@ function render_scene_cyl(w,h)
     end
 end
 
-function render_scene_sq(w,h)
+function render_scene_no_fisheye(w,h)
     for i=1,w do
         local rot = game.player.rot + (i - w/2) * CONFIG.FOV/w
 
@@ -159,21 +168,32 @@ function render_map()
     love.graphics.setColor(0.42, 0.63, 0.05)
     love.graphics.circle("fill", game.player.x, game.player.y, CONFIG.NODE_SIZE/4)
 
-    for i=-5,5 do
-        local rot = game.player.rot + i * CONFIG.FOV/10
+    if CONFIG.MAP_NUM_RAYS ~= 0 then
+        for i=-CONFIG.MAP_NUM_RAYS,CONFIG.MAP_NUM_RAYS do
+            local rot = game.player.rot + i * CONFIG.FOV/(2*CONFIG.MAP_NUM_RAYS)
 
-        dist, side, points = game:getDistanceToObstacle(rot)
-        love.graphics.setColor(0, 1, 0)
-        love.graphics.line(game.player.x, game.player.y,
-            game.player.x + math.cos(rot) * dist,
-            game.player.y + math.sin(rot) * dist)
+            dist, side, points = game:getDistanceToObstacle(rot)
 
-        for _, point in ipairs(points) do
-            love.graphics.setColor(1,0,0)
-            love.graphics.circle("fill", point.x, point.y, 3)
+            line_points = {}
+            
+            table.insert(line_points, game.player.x)
+            table.insert(line_points, game.player.y)
+
+            for _, point in ipairs(points) do
+                table.insert(line_points, point.x)
+                table.insert(line_points, point.y)
+            end
+
+
+            love.graphics.setColor(0, 1, 0)
+            love.graphics.line(line_points)
+
+            for _, point in ipairs(points) do
+                love.graphics.setColor(1,0,0)
+                love.graphics.circle("fill", point.x, point.y, 3)
+            end
         end
     end
-
     love.graphics.pop()
 end
 
@@ -183,10 +203,10 @@ function game:draw()
     local w = love.graphics.getWidth()
     local h = love.graphics.getHeight()
 
-    if CONFIG.RENDER_MODE == "cyl" then
-        render_scene_cyl(w,h)
+    if CONFIG.FISHEYE then
+        render_scene_fisheye(w,h)
     else
-        render_scene_sq(w,h)
+        render_scene_no_fisheye(w,h)
     end
     if CONFIG.DISPLAY_MAP then
         render_map()
@@ -204,8 +224,9 @@ function game:draw()
 
     love.graphics.setColor(1,0,0)
     disp(fps)
-    disp("Render mode: " .. CONFIG.RENDER_MODE)
-    disp("FOV: " .. CONFIG.FOV/math.pi*180 .. " degrees")
+    disp("Fisheye: " .. (CONFIG.FISHEYE and "on" or "off"))
+    disp(string.format("FOV: %.0f degrees", CONFIG.FOV/math.pi*180))
+    disp("Map num rays: " .. CONFIG.MAP_NUM_RAYS)
     disp(string.format("Position: %.0f, %.0f", game.player.x, game.player.y))
     disp(string.format("Angle: %.0f degrees", game.player.rot/math.pi*180))
 
@@ -222,11 +243,6 @@ function game:getDistanceToObstacle(angle)
     local prev_pos = {}
 
     local distance = 0
-    --[[
-    function distance()
-        return math.sqrt((current_pos.x - game.player.x)^2 + (current_pos.y - game.player.y)^2)
-    end
-    --]]
 
     angle = angle % (2*math.pi)
 
@@ -314,7 +330,6 @@ function game:getDistanceToObstacle(angle)
             end
         else
             print("Incorrect angle " .. angle)
-            --return distance(), "x", points
         end
 
         distance = distance + math.sqrt((current_pos.x - prev_pos.x)^2 + (current_pos.y - prev_pos.y)^2)
@@ -328,7 +343,29 @@ function game:getDistanceToObstacle(angle)
         local isMirror, ind = game:isMirror({x = current_pos.x + eps * math.cos(angle),
                                          y = current_pos.y + eps * math.sin(angle)})
         if isMirror then
-            angle = math.pi/2 - (angle - math.pi)
+            local wallY = math.floor(ind / CONFIG.WORLD_SIZE) * CONFIG.NODE_SIZE
+            local wallX = (ind % CONFIG.WORLD_SIZE) * CONFIG.NODE_SIZE
+            local dx = current_pos.x - wallX + CONFIG.NODE_SIZE/2
+            local dy = current_pos.y - wallY - CONFIG.NODE_SIZE/2
+
+            local angle_in = math.atan(dy/dx) + math.pi/4
+
+            local side = ""
+
+            if math.tan(angle_in) > 0 then
+                side = "x"
+            else
+                side = "y"
+            end
+            -- REFACTOR: put above code into a separate function, unite with the one from below
+
+            if (side == "y") then
+                angle = math.pi * 2 - angle
+            elseif (side == "x") then
+                angle = math.pi - angle
+            end
+            
+            angle = angle % (math.pi * 2)
         elseif isWall then
             local wallY = math.floor(ind / CONFIG.WORLD_SIZE) * CONFIG.NODE_SIZE
             local wallX = (ind % CONFIG.WORLD_SIZE) * CONFIG.NODE_SIZE
@@ -371,12 +408,8 @@ end
 function game:keypressed(key)
     if key == "escape" then
         love.event.quit()
-    elseif key == "1" then
-        if CONFIG.RENDER_MODE == "sq" then
-            CONFIG.RENDER_MODE = "cyl"
-        else
-            CONFIG.RENDER_MODE = "sq"
-        end
+    elseif key == "f" then
+        CONFIG.FISHEYE = not CONFIG.FISHEYE
     elseif key == "tab" then
         CONFIG.DISPLAY_MAP = not CONFIG.DISPLAY_MAP
     end

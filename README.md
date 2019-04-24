@@ -1,7 +1,9 @@
 Controls:
 
 * wasd - move
+* qe - also move
 * space - jump
 * tab - toggle map display
-* 1 - toggle fisheye on/off
-* 2 and 3 - control fov
+* f - toggle fisheye
+* - and = - control FOV
+* [ and ] - control number of rays displayed on map
