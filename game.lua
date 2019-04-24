@@ -1,6 +1,7 @@
 local game = {}
 
 function game:init()
+    game.sceneCanvas = love.graphics.newCanvas()
     -- textures
     love.graphics.setDefaultFilter("nearest")
     game.wall = love.graphics.newImage("assets/wall.png")
@@ -11,13 +12,13 @@ function game:init()
     -- 1 is wall
     game.world = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,
+    1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
@@ -112,6 +113,9 @@ function game:update(dt)
 end
 
 function render_scene(w,h)
+    love.graphics.setCanvas(game.sceneCanvas)
+    love.graphics.clear()
+
     for i=1,w do
         local rot = game.player.rot + (i - w/2) * CONFIG.FOV/w
 
@@ -137,6 +141,11 @@ function render_scene(w,h)
 
 --        love.graphics.line(i, game.player.z + h/2 - 10000/dist, i, game.player.z + h/2 + 10000/dist)
     end
+
+    love.graphics.setCanvas()
+
+    love.graphics.setColor(255,255,255)
+    love.graphics.draw(game.sceneCanvas, 0,0)
 end
 
 function render_map()
