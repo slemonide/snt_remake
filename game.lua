@@ -13,23 +13,23 @@ function game:init()
     game.world = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,
     1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,
+    1,2,2,2,2,2,1,0,1,0,0,0,0,0,0,0,0,0,0,1,
+    1,2,0,0,0,2,1,1,1,0,0,0,0,0,0,0,0,0,0,1,
+    1,2,0,1,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,2,0,0,0,2,1,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,2,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,2,0,1,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,2,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,2,2,0,2,2,1,0,0,0,0,0,0,0,1,0,0,0,0,1,
+    1,1,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,2,2,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     }
 
@@ -43,6 +43,37 @@ function game:init()
         vz = 0, -- speed in the z direction
         rot = 0
     }
+end
+
+function game:update_scene(w,h)
+    love.graphics.setCanvas(game.sceneCanvas)
+    love.graphics.clear()
+
+    for i=1,w do
+        local rot = game.player.rot + (i - w/2) * CONFIG.FOV/w
+
+        local dist, side, points, offset = game:getDistanceToObstacle(rot)
+        -- only difference from before is a correction to dist:
+        if not CONFIG.FISH_EYE then
+            local ang = (i - w/2) * CONFIG.FOV/w
+            dist = dist * math.cos(ang)
+        end
+        local shadow = math.min(dist/CONFIG.SHADOW_SIZE/10,0.5)
+        if side == "x" then
+            love.graphics.setColor(0.6-shadow,0.6-shadow,0.6-shadow)
+        elseif side == "y" then
+            love.graphics.setColor(0.55-shadow, 0.55-shadow,0.55-shadow)
+        end
+        if CONFIG.TEXTURES then
+            game.wall_quad:setViewport(64*(offset/CONFIG.NODE_SIZE % 1),0,1,64)
+            love.graphics.draw(game.wall, game.wall_quad, i,
+                            game.player.z + h/2 - 10000/dist, 0, 1, 310/dist, 0, 0)
+        else
+            love.graphics.line(i, game.player.z + h/2 - 10000/dist, i, game.player.z + h/2 + 10000/dist)
+        end
+    end
+
+    love.graphics.setCanvas()
 end
 
 function game:update(dt)
@@ -112,43 +143,14 @@ function game:update(dt)
     end
 end
 
-function render_scene(w,h)
-    love.graphics.setCanvas(game.sceneCanvas)
-    love.graphics.clear()
-
-    for i=1,w do
-        local rot = game.player.rot + (i - w/2) * CONFIG.FOV/w
-
-        local dist, side, points, offset = game:getDistanceToObstacle(rot)
-        -- only difference from before is a correction to dist:
-        if not CONFIG.FISH_EYE then
-            local ang = (i - w/2) * CONFIG.FOV/w
-            dist = dist * math.cos(ang)
-        end
-        local shadow = math.min(dist/CONFIG.SHADOW_SIZE/10,0.5)
-        if side == "x" then
-            --love.graphics.setColor((0.6-shadow)*offset/CONFIG.NODE_SIZE,0.6-shadow,0.6-shadow)
-            love.graphics.setColor(0.6-shadow,0.6-shadow,0.6-shadow)
-        elseif side == "y" then
-            ---love.graphics.setColor((0.55-shadow)*offset/CONFIG.NODE_SIZE, 0.55-shadow,0.55-shadow)
-            love.graphics.setColor(0.55-shadow, 0.55-shadow,0.55-shadow)
-        end
-        game.wall_quad:setViewport(64*offset/CONFIG.NODE_SIZE,0,1,64)
-        --love.graphics.draw(game.wall, game.wall_quad, i, -500 + game.player.z + h/2, 0, 1, 2000/dist, 0, 0)
-        --love.graphics.draw(game.wall, game.wall_quad, i, game.player.z + h/2 - 10000/dist, 0, 1, 1000/dist, 0, 0)
-        love.graphics.draw(game.wall, game.wall_quad, i,
-                        game.player.z + h/2 - 10000/dist - 300, 0, 1, 1000/dist, 0, 0)
-
---        love.graphics.line(i, game.player.z + h/2 - 10000/dist, i, game.player.z + h/2 + 10000/dist)
-    end
-
-    love.graphics.setCanvas()
-
-    love.graphics.setColor(255,255,255)
+function game:render_scene(w,h)
+    game:update_scene(w,h)
+    
+    love.graphics.setColor(1,1,1)
     love.graphics.draw(game.sceneCanvas, 0,0)
 end
 
-function render_map()
+function game:render_map()
     love.graphics.push()
     love.graphics.scale(CONFIG.MAP_NODE_SIZE / CONFIG.NODE_SIZE,
                         CONFIG.MAP_NODE_SIZE / CONFIG.NODE_SIZE)
@@ -206,14 +208,14 @@ end
 
 function game:draw()
     local t1 = os.clock()
-
+    
     local w = love.graphics.getWidth()
     local h = love.graphics.getHeight()
 
-    render_scene(w,h)
+    game:render_scene(w,h)
 
     if CONFIG.DISPLAY_MAP then
-        render_map()
+        game:render_map()
     end
 
     -- compute FPS
@@ -229,6 +231,7 @@ function game:draw()
     love.graphics.setColor(1,0,0)
     disp(fps)
     disp("Fisheye: " .. (CONFIG.FISH_EYE and "on" or "off"))
+    disp("Textures: " .. (CONFIG.TEXTURES and "on" or "off"))
     disp(string.format("FOV: %.0f degrees", CONFIG.FOV/math.pi*180))
     disp("Map num rays: " .. CONFIG.MAP_NUM_RAYS)
     disp(string.format("Position: %.0f, %.0f", game.player.x, game.player.y))
@@ -378,7 +381,27 @@ function game:getDistanceToObstacle(angle)
 
             local angle_in = math.atan(dy/dx) + math.pi/4
 
-            local offset = math.sqrt((wallX - current_pos.x)^2 + (wallY - current_pos.y)^2)
+            angle_in = angle_in % (2*math.pi)
+
+
+            local x_i = math.floor(current_pos.x / CONFIG.NODE_SIZE)
+            local y_i = math.floor(current_pos.y / CONFIG.NODE_SIZE)
+
+            local offset = 0
+
+            if (angle_in >= 0 and angle_in < math.pi/2) then
+                offset = math.sqrt((x_i * CONFIG.NODE_SIZE - current_pos.x)^2
+                                 + (y_i * CONFIG.NODE_SIZE - current_pos.y)^2)
+            elseif (angle_in >= math.pi/2 and angle_in < math.pi) then
+                offset = math.sqrt(((x_i+1) * CONFIG.NODE_SIZE - current_pos.x)^2
+                                 + ((y_i) * CONFIG.NODE_SIZE - current_pos.y)^2)
+            elseif (angle_in >= math.pi * 3/2 and angle_in < math.pi * 2) then
+                offset = math.sqrt(((x_i+1) * CONFIG.NODE_SIZE - current_pos.x)^2
+                                 + ((y_i) * CONFIG.NODE_SIZE - current_pos.y)^2)
+            else
+                print("Unknown angle: " .. angle_in)
+            end
+
             if math.tan(angle_in) > 0 then
                 return distance, "x", points, offset
             else
@@ -417,6 +440,8 @@ function game:keypressed(key)
         CONFIG.FISH_EYE = not CONFIG.FISH_EYE
     elseif key == "tab" then
         CONFIG.DISPLAY_MAP = not CONFIG.DISPLAY_MAP
+    elseif key == "t" then
+        CONFIG.TEXTURES = not CONFIG.TEXTURES
     end
 end
 

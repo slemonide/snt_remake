@@ -7,3 +7,4 @@ Controls:
 * f - toggle fisheye
 * - and = - control FOV
 * [ and ] - control number of rays displayed on map
+* t - toggle textures

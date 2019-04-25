@@ -15,7 +15,7 @@ eps = 0.0001 -- just a small number
 CONFIG = {
     NODE_SIZE = 30, -- 15
     MAP_NODE_SIZE = 30,
-    SHADOW_SIZE = 300,
+    SHADOW_SIZE = 200,
     WORLD_SIZE = 20,
     PLAYER_SPEED = 100,
     JUMP_SPEED = 200,
@@ -28,5 +28,6 @@ CONFIG = {
     MAP_NUM_RAYS = 5,
 
     FISH_EYE = false,
+    TEXTURES = true,
     CORRECTION_COEFF = 1
 }
