@@ -1,6 +1,9 @@
 local game = {}
 
 function game:init()
+    local Player = require("player")
+    game.player = Player(game)
+
     game.sceneCanvas = love.graphics.newCanvas()
     -- textures
     love.graphics.setDefaultFilter("nearest")
@@ -33,16 +36,6 @@ function game:init()
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     }
 
-    -- player's state
-    -- position, in pixel coordinates
-    -- rotation, in radians, 0 is +x
-    game.player = {
-        x = 2 * CONFIG.NODE_SIZE,
-        y = 2 * CONFIG.NODE_SIZE,
-        z = 0,
-        vz = 0, -- speed in the z direction
-        rot = 0
-    }
 end
 
 function game:update_scene(w,h)
@@ -77,27 +70,8 @@ function game:update_scene(w,h)
 end
 
 function game:update(dt)
-    local last_pos = {
-        x = game.player.x,
-        y = game.player.y
-    }
+    game.player:update(dt)
 
-    if love.keyboard.isDown("w") then
-        game.player.x = game.player.x + math.cos(game.player.rot) * CONFIG.PLAYER_SPEED * dt
-        game.player.y = game.player.y + math.sin(game.player.rot) * CONFIG.PLAYER_SPEED * dt
-    end
-    if love.keyboard.isDown("e") then
-        game.player.x = game.player.x + math.cos(game.player.rot + math.pi/2) * CONFIG.PLAYER_SPEED * dt
-        game.player.y = game.player.y + math.sin(game.player.rot + math.pi/2) * CONFIG.PLAYER_SPEED * dt
-    end
-    if love.keyboard.isDown("s") then
-        game.player.x = game.player.x - math.cos(game.player.rot) * CONFIG.PLAYER_SPEED * dt
-        game.player.y = game.player.y - math.sin(game.player.rot) * CONFIG.PLAYER_SPEED * dt
-    end
-    if love.keyboard.isDown("q") then
-        game.player.x = game.player.x + math.cos(game.player.rot - math.pi/2) * CONFIG.PLAYER_SPEED * dt
-        game.player.y = game.player.y + math.sin(game.player.rot - math.pi/2) * CONFIG.PLAYER_SPEED * dt
-    end
     if love.keyboard.isDown("-") then
         CONFIG.FOV = CONFIG.FOV - math.pi / 180
     end
@@ -112,34 +86,6 @@ function game:update(dt)
     end
     if love.keyboard.isDown("]") then
         CONFIG.MAP_NUM_RAYS = CONFIG.MAP_NUM_RAYS + 1
-    end
-
-    -- collision detection
-    if game:isWall(game.player) then
-        game.player.x = last_pos.x
-        game.player.y = last_pos.y
-    end
-
-    if love.keyboard.isDown("a") then
-        game.player.rot = game.player.rot - CONFIG.FOV_SPEED * dt
-    end
-    if love.keyboard.isDown("d") then
-        game.player.rot = game.player.rot + CONFIG.FOV_SPEED * dt
-    end
-    if love.keyboard.isDown("space") then
-        if game.player.z == 0 then
-            game.player.vz = CONFIG.JUMP_SPEED
-            game.player.z = game.player.z + game.player.vz * dt
-        end
-    end
-
-    -- jump
-    if game.player.z <= 0 then
-        game.player.vz = 0
-        game.player.z = 0
-    else
-        game.player.z = game.player.z + game.player.vz * dt
-        game.player.vz = game.player.vz + CONFIG.GRAV_ACC * dt
     end
 end
 
