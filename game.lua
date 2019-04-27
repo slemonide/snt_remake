@@ -5,11 +5,14 @@ function game:init()
     game.player = Player(game)
     local Nodes = require("nodes")
     game.nodes = Nodes()
-    local Generator = require("generator")
-    game.generator = Generator(game)
-    math.randomseed(os.time())
+    local MapLoader = require("map_loader")
+    game.map_loader = MapLoader(game)
+    game.map_loader:load_map("level1.map")
+    --local Generator = require("generator")
+    --game.generator = Generator(game)
+    --math.randomseed(os.time())
 
-    game.generator:addMaze(0, 0)
+    --game.generator:addMaze(0, 0)
     --game.generator:addCave(0,0, 3)
     --game.generator:placeWall(0, 0)
 
@@ -54,7 +57,7 @@ end
 
 function game:update(dt)
     game.player:update(dt)
-    game.generator:generate()
+    --game.generator:generate()
 
     if love.keyboard.isDown("-") then
         CONFIG.FOV = CONFIG.FOV - math.pi / 180

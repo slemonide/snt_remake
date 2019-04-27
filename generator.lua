@@ -11,8 +11,8 @@ local Generator = Class{
     end
 }
 
-local GENERATOR_DISTANCE = 10
-local STONE_FILL_DISTANCE = 5
+local GENERATOR_DISTANCE = 50
+local STONE_FILL_DISTANCE = 20
 
 function Generator:add(x, y, data)
     table.insert(self.toDoLater, function() self.storage:safeAdd(x, y, data) end)
@@ -66,45 +66,38 @@ function Generator:addMaze(x, y)
         action = function()
             self:remove(x, y)
 
-            for dx = -1,1 do
-                for dy = -1,1 do
-                    self:placeFloor(x + dx,y + dy)
-                end
-            end
-            self:placeWall(x+2,y+2)
-            self:placeWall(x+2,y-2)
-            self:placeWall(x-2,y+2)
-            self:placeWall(x-2,y-2)
+            self:placeWall(x+1,y+1)
+            self:placeWall(x+1,y-1)
+            self:placeWall(x-1,y+1)
+            self:placeWall(x-1,y-1)
 
             local function generateNextNode(generate, dx, dy)
                 local function generateBorders(wall)
                     local func = function(x,y)
                         if (wall) then
                             self:placeWall(x,y)
-                        else
-                            self:placeFloor(x,y)
                         end
                     end
 
                     if (math.random() > 0.4) then
                         if (dx == 0) then
-                            func(x, y + dy / 2)
-                            func(x - 1, y + dy / 2)
-                            func(x + 1, y + dy / 2)
+                            func(x, y + dy * 2)
+                            func(x - 1, y + dy * 2)
+                            func(x + 1, y + dy * 2)
                         else
-                            func(x + dx / 2, y)
-                            func(x + dx / 2, y - 1)
-                            func(x + dx / 2, y + 1)
+                            func(x + dx * 2, y)
+                            func(x + dx * 2, y - 1)
+                            func(x + dx * 2, y + 1)
                         end
                     else
                         if (dx == 0) then
-                            func(x, y + dy / 2)
-                            self:placeWall(x - 1, y + dy / 2)
-                            self:placeWall(x + 1, y + dy / 2)
+                            func(x, y + dy * 2)
+                            self:placeWall(x - 1, y + dy * 2)
+                            self:placeWall(x + 1, y + dy * 2)
                         else
-                            func(x + dx / 2, y)
-                            self:placeWall(x + dx / 2, y - 1)
-                            self:placeWall(x + dx / 2, y + 1)
+                            func(x + dx * 2, y)
+                            self:placeWall(x + dx * 2, y - 1)
+                            self:placeWall(x + dx * 2, y + 1)
                         end
                     end
                 end
@@ -113,7 +106,7 @@ function Generator:addMaze(x, y)
                     generateBorders(false)
                     self:addMaze(x + dx, y + dy)
                 else
-                    --generateBorders(true)
+                    generateBorders(true)
                 end
 
                 return generate
@@ -139,8 +132,8 @@ function Generator:addMaze(x, y)
 
                 return generateNextNode(
                     generate,
-                    4 * dx,
-                    4 * dy
+                    2 * dx,
+                    2 * dy
                 )
             end
 
@@ -179,13 +172,13 @@ function Generator:addCave(x, y, points)
                     self:addCave(x, y, math.pow(2, math.random(60) + 10))
                 end
             else
-                node.points = points / 2
+                node.points = points * 2
 
                 local generatorOptions = {
-                    function() self:addCave(x+1, y, points / 2) end,
-                    function() self:addCave(x-1, y, points / 2) end,
-                    function() self:addCave(x, y+1, points / 2) end,
-                    function() self:addCave(x, y-1, points / 2) end
+                    function() self:addCave(x+1, y, points * 2) end,
+                    function() self:addCave(x-1, y, points * 2) end,
+                    function() self:addCave(x, y+1, points * 2) end,
+                    function() self:addCave(x, y-1, points * 2) end
                 }
 
                 generatorOptions[math.random(#generatorOptions)]()
