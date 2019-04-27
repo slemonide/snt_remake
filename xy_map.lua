@@ -7,8 +7,8 @@ local XYMap = Class{
 
 -- Same as add, but won't add anything if the space is already occupied
 function XYMap:safeAdd(x, y, data)
-    if (not XYMap:contains(x, y)) then
-        XYMap:add(x, y, data)
+    if (not self:contains(x, y)) then
+        self:add(x, y, data)
     end
 end
 
@@ -46,7 +46,7 @@ function XYMap:contains(x, y)
 
     x = math.floor(x)
     y = math.floor(y)
-    
+
     return (self.storage[x] or {})[y]
 end
 
@@ -77,7 +77,7 @@ function XYMap:randomPosition()
         end
     end
 
-    return XYMap:forEach(newFunction())
+    return self:forEach(newFunction())
 end
 
 function XYMap:clear()

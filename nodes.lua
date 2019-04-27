@@ -10,7 +10,7 @@ local Nodes = Class{
 }
 
 local function try(x, y)
-    return not not (Nodes:isWalkable(x,y) or not Nodes:contains(x,y))
+    return not not (self:isWalkable(x,y) or not self:contains(x,y))
 end
 
 function Nodes:contains(x, y)
@@ -27,6 +27,10 @@ end
 
 function Nodes:safeAddNode(x, y, name)
     self.storage:safeAdd(x, y, self.names[name])
+end
+
+function Nodes:get(x, y)
+    return self.storage:get(x, y)
 end
 
 function Nodes:isWalkable(x, y)

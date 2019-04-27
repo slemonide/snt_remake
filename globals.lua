@@ -16,7 +16,7 @@ CONFIG = {
     NODE_SIZE = 30, -- 15
     MAP_NODE_SIZE = 30,
     SHADOW_SIZE = 200/30,
-    PLAYER_SPEED = 1,
+    PLAYER_SPEED = 2.5,
     JUMP_SPEED = 200,
     GRAV_ACC = -200,
     -- 4 * math.pi

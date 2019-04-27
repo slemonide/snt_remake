@@ -5,26 +5,13 @@ function game:init()
     game.player = Player(game)
     local Nodes = require("nodes")
     game.nodes = Nodes()
-    game.nodes:addNode(0, 0, "stone_brick")
-    game.nodes:addNode(1, 0, "stone_brick")
-    game.nodes:addNode(2, 0, "stone_brick")
-    game.nodes:addNode(3, 0, "stone_brick")
-    game.nodes:addNode(4, 0, "stone_brick")
-    game.nodes:addNode(5, 0, "stone_brick")
-    game.nodes:addNode(0, 5, "stone_brick")
-    game.nodes:addNode(1, 5, "stone_brick")
-    game.nodes:addNode(2, 5, "stone_brick")
-    game.nodes:addNode(3, 5, "stone_brick")
-    game.nodes:addNode(4, 5, "stone_brick")
-    game.nodes:addNode(5, 5, "stone_brick")
-    game.nodes:addNode(0, 1, "stone_brick")
-    game.nodes:addNode(0, 2, "stone_brick")
-    game.nodes:addNode(0, 3, "stone_brick")
-    game.nodes:addNode(0, 4, "stone_brick")
-    game.nodes:addNode(5, 1, "stone_brick")
-    game.nodes:addNode(5, 2, "stone_brick")
-    game.nodes:addNode(5, 3, "stone_brick")
-    game.nodes:addNode(5, 4, "stone_brick")
+    local Generator = require("generator")
+    game.generator = Generator(game)
+    math.randomseed(os.time())
+
+    game.generator:addMaze(0, 0)
+    --game.generator:addCave(0,0, 3)
+    --game.generator:placeWall(0, 0)
 
     game.sceneCanvas = love.graphics.newCanvas()
     -- textures
@@ -67,6 +54,7 @@ end
 
 function game:update(dt)
     game.player:update(dt)
+    game.generator:generate()
 
     if love.keyboard.isDown("-") then
         CONFIG.FOV = CONFIG.FOV - math.pi / 180
