@@ -55,11 +55,20 @@ function game:update(dt)
     game.player:update(dt)
     game.minimap:update(dt)
 
-    if love.keyboard.isDown("-") then
-        CONFIG.FOV = CONFIG.FOV - math.pi / 180
-    end
-    if love.keyboard.isDown("=") then
-        CONFIG.FOV = CONFIG.FOV + math.pi / 180
+    if not love.keyboard.isDown("lshift") then
+        if love.keyboard.isDown("-") then
+            CONFIG.FOV = CONFIG.FOV - math.pi / 180
+        end
+        if love.keyboard.isDown("=") then
+            CONFIG.FOV = CONFIG.FOV + math.pi / 180
+        end
+    else
+        if love.keyboard.isDown("-") then
+            CONFIG.MAP_SIZE = math.max(CONFIG.MAP_SIZE - 1, 0)
+        end
+        if love.keyboard.isDown("=") then
+            CONFIG.MAP_SIZE = CONFIG.MAP_SIZE + 1
+        end
     end
 end
 

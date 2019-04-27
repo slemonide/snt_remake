@@ -10,16 +10,16 @@ function MiniMap:update(dt)
     local x, y = love.mouse.getPosition()
 
     local x_i = math.floor(x / CONFIG.MAP_NODE_SIZE + self.game.player.x % 1) - 1
-    local y_i = math.floor(y / CONFIG.MAP_NODE_SIZE + self.game.player.y % 1) - 1
+    local y_i = math.floor(y / CONFIG.MAP_NODE_SIZE + self.game.player.y % 1)
 
-    if x_i <= 10 and y_i <= 10 then
+    if x_i <= CONFIG.MAP_SIZE * 2 and y_i <= CONFIG.MAP_SIZE * 2 then
         self.selected_node = {x = x_i, y = y_i}
 
         local x_p = math.floor(self.game.player.x)
         local y_p = math.floor(self.game.player.y)
 
-        local x_w = x_p - 5 + x_i
-        local y_w = y_p - 5 + y_i
+        local x_w = x_p - CONFIG.MAP_SIZE + x_i
+        local y_w = y_p - CONFIG.MAP_SIZE + y_i
 
         if love.mouse.isDown(1) then -- primary button (usually left)
             self.game.nodes:addNode(x_w,y_w, "stone_brick")
@@ -50,15 +50,15 @@ function MiniMap:render()
     love.graphics.scale(CONFIG.MAP_NODE_SIZE,
                         CONFIG.MAP_NODE_SIZE)
     love.graphics.setLineWidth(1/CONFIG.MAP_NODE_SIZE)
-    love.graphics.translate(6-self.game.player.x, 6-self.game.player.y)
+    love.graphics.translate(1+CONFIG.MAP_SIZE-self.game.player.x, CONFIG.MAP_SIZE-self.game.player.y)
 
     x_i = math.floor(self.game.player.x)
     y_i = math.floor(self.game.player.y)
 
-    for xj=0,10 do
-        for yj=0,10 do
-            x = x_i - 5 + xj
-            y = y_i - 5 + yj
+    for xj=0,CONFIG.MAP_SIZE*2 do
+        for yj=0,CONFIG.MAP_SIZE*2 do
+            x = x_i - CONFIG.MAP_SIZE + xj
+            y = y_i - CONFIG.MAP_SIZE + yj
             local v = 0
             if self.game.nodes:contains(x,y) then
                 v = 1
