@@ -14,7 +14,7 @@ eps = 0.0001 -- just a small number
 
 CONFIG = {
     NODE_SIZE = 30, -- 15
-    MAP_NODE_SIZE = 30,
+    MAP_NODE_SIZE = 10,
     SHADOW_SIZE = 200,
     WORLD_SIZE = 20,
     PLAYER_SPEED = 100,
