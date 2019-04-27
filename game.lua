@@ -8,13 +8,9 @@ function game:init()
     local MapLoader = require("map_loader")
     game.map_loader = MapLoader(game)
     game.map_loader:load_map("level1.map")
-    --local Generator = require("generator")
-    --game.generator = Generator(game)
-    --math.randomseed(os.time())
 
-    --game.generator:addMaze(0, 0)
-    --game.generator:addCave(0,0, 3)
-    --game.generator:placeWall(0, 0)
+    local MiniMap = require("minimap")
+    game.minimap = MiniMap(game)
 
     game.sceneCanvas = love.graphics.newCanvas()
     -- textures
@@ -57,7 +53,6 @@ end
 
 function game:update(dt)
     game.player:update(dt)
-    --game.generator:generate()
 
     if love.keyboard.isDown("-") then
         CONFIG.FOV = CONFIG.FOV - math.pi / 180
@@ -83,66 +78,6 @@ function game:render_scene(w,h)
     love.graphics.draw(game.sceneCanvas, 0,0)
 end
 
-function game:render_map()
-    love.graphics.push()
-    love.graphics.scale(CONFIG.MAP_NODE_SIZE,
-                        CONFIG.MAP_NODE_SIZE)
-    love.graphics.setLineWidth(1/CONFIG.MAP_NODE_SIZE)
-
-    for x=0,10 do
-        for y=0,10 do
-            local v = 0
-            if game.nodes:contains(x,y) then
-                v = 1
-            end
-            if v == 1 then
-                love.graphics.setColor(0.70, 0.63, 0.05)
-                love.graphics.rectangle("fill", x, y, 1, 1)
-            elseif v == 2 then
-                love.graphics.setColor(0.06, 0.63, 0.70)
-                love.graphics.rectangle("fill", x, y, 1, 1)
-            end
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.rectangle("line", x, y, 1, 1)
-        end
-    end
-    
-    love.graphics.setColor(1, 0.42, 0.64)
-    love.graphics.arc("fill", game.player.x, game.player.y, 0.1,
-        game.player.rot + CONFIG.FOV/2,
-        game.player.rot - CONFIG.FOV/2)
-    love.graphics.setColor(0.42, 0.63, 0.05)
-    love.graphics.circle("fill", game.player.x, game.player.y, 1/4)
-
-    if CONFIG.MAP_NUM_RAYS ~= 0 then
-        for i=-CONFIG.MAP_NUM_RAYS,CONFIG.MAP_NUM_RAYS do
-            local rot = game.player.rot + i * CONFIG.FOV/(2*CONFIG.MAP_NUM_RAYS)
-
-            dist, side, points = game:getDistanceToObstacle(rot)
-
-            line_points = {}
-            
-            table.insert(line_points, game.player.x)
-            table.insert(line_points, game.player.y)
-
-            for _, point in ipairs(points) do
-                table.insert(line_points, point.x)
-                table.insert(line_points, point.y)
-            end
-
-
-            love.graphics.setColor(0, 1, 0)
-            love.graphics.line(line_points)
-
-            for _, point in ipairs(points) do
-                love.graphics.setColor(1,0,0)
-                love.graphics.circle("fill", point.x, point.y, 0.1)
-            end
-        end
-    end
-    love.graphics.pop()
-end
-
 function game:draw()
     local t1 = os.clock()
     
@@ -152,7 +87,7 @@ function game:draw()
     game:render_scene(w,h)
 
     if CONFIG.DISPLAY_MAP then
-        game:render_map()
+        game.minimap:render()
     end
 
     -- compute FPS
