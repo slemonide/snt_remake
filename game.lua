@@ -53,21 +53,13 @@ end
 
 function game:update(dt)
     game.player:update(dt)
+    game.minimap:update(dt)
 
     if love.keyboard.isDown("-") then
         CONFIG.FOV = CONFIG.FOV - math.pi / 180
     end
     if love.keyboard.isDown("=") then
         CONFIG.FOV = CONFIG.FOV + math.pi / 180
-    end
-    if love.keyboard.isDown("[") then
-        CONFIG.MAP_NUM_RAYS = CONFIG.MAP_NUM_RAYS - 1
-        if CONFIG.MAP_NUM_RAYS < 0 then
-            CONFIG.MAP_NUM_RAYS = 0
-        end
-    end
-    if love.keyboard.isDown("]") then
-        CONFIG.MAP_NUM_RAYS = CONFIG.MAP_NUM_RAYS + 1
     end
 end
 

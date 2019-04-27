@@ -1,8 +1,49 @@
 local MiniMap = Class{
     init = function(self, game)
         self.game = game
+        self.selected_node = false -- false or position in the form {x=number, y=number}
     end
 }
+
+function MiniMap:update(dt)
+    -- active node
+    local x, y = love.mouse.getPosition()
+
+    local x_i = math.floor(x / CONFIG.MAP_NODE_SIZE + self.game.player.x % 1) - 1
+    local y_i = math.floor(y / CONFIG.MAP_NODE_SIZE + self.game.player.y % 1) - 1
+
+    if x_i <= 10 and y_i <= 10 then
+        self.selected_node = {x = x_i, y = y_i}
+
+        local x_p = math.floor(self.game.player.x)
+        local y_p = math.floor(self.game.player.y)
+
+        local x_w = x_p - 5 + x_i
+        local y_w = y_p - 5 + y_i
+
+        if love.mouse.isDown(1) then -- primary button (usually left)
+            self.game.nodes:addNode(x_w,y_w, "stone_brick")
+        elseif love.mouse.isDown(2) then -- secondary button (usually right)
+            self.game.nodes:remove(x_w,y_w)
+        end
+
+    else
+        self.selected_node = false
+    end
+
+    -- number of rays
+
+    if love.keyboard.isDown("[") then
+        CONFIG.MAP_NUM_RAYS = CONFIG.MAP_NUM_RAYS - 1
+        if CONFIG.MAP_NUM_RAYS < 0 then
+            CONFIG.MAP_NUM_RAYS = 0
+        end
+    end
+    if love.keyboard.isDown("]") then
+        CONFIG.MAP_NUM_RAYS = CONFIG.MAP_NUM_RAYS + 1
+    end
+
+end
 
 function MiniMap:render()
     love.graphics.push()
@@ -29,7 +70,14 @@ function MiniMap:render()
                 love.graphics.setColor(0.06, 0.63, 0.70)
                 love.graphics.rectangle("fill", x, y, 1, 1)
             end
-            love.graphics.setColor(1, 1, 1)
+            if self.selected_node and self.selected_node.x == xj and
+                                      self.selected_node.y == yj then
+
+                love.graphics.setColor(0, 1, 0, 0.5)
+                love.graphics.rectangle("fill", x, y, 1, 1)
+            else
+                love.graphics.setColor(1, 1, 1)
+            end
             love.graphics.rectangle("line", x, y, 1, 1)
         end
     end
