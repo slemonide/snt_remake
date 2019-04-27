@@ -38,6 +38,15 @@ function XYMap:forEach(fun)
 end
 
 function XYMap:contains(x, y)
+    if not y then
+        local pos = x
+        y = pos.y
+        x = pos.x
+    end
+
+    x = math.floor(x)
+    y = math.floor(y)
+    
     return (self.storage[x] or {})[y]
 end
 

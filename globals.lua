@@ -14,15 +14,13 @@ eps = 0.0001 -- just a small number
 
 CONFIG = {
     NODE_SIZE = 30, -- 15
-    MAP_NODE_SIZE = 10,
-    SHADOW_SIZE = 200,
-    WORLD_SIZE = 20,
-    PLAYER_SPEED = 100,
+    MAP_NODE_SIZE = 30,
+    SHADOW_SIZE = 200/30,
+    PLAYER_SPEED = 1,
     JUMP_SPEED = 200,
     GRAV_ACC = -200,
     -- 4 * math.pi
     FOV = math.pi / 180 * 74,
-    FOV_TRIANGLE_SIZE = 20,
     FOV_SPEED = 100 / 180 * math.pi,
     DISPLAY_MAP = false,
     MAP_NUM_RAYS = 5,

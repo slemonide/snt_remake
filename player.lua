@@ -2,8 +2,8 @@ local Player = Class{
     init = function(self, game)
     -- position, in pixel coordinates
     -- rotation, in radians, 0 is +x
-        self.x = 2 * CONFIG.NODE_SIZE
-        self.y = 2 * CONFIG.NODE_SIZE
+        self.x = 2
+        self.y = 2
         self.z = 0
         self.vz = 0 -- speed in the z direction
         self.rot = 0
