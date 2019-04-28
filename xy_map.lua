@@ -2,6 +2,9 @@ local XYMap = Class{
     init = function(self)
         self.storage = {}
         self.size = 0
+        self.min_pos = {x=0,y=0} -- roughly tells the bounding box of the world
+        self.max_pos = {x=0,y=0} -- it can only grow, i.e. it is not shrinked
+                                 -- when things are removed
     end
 }
 
@@ -13,6 +16,11 @@ function XYMap:safeAdd(x, y, data)
 end
 
 function XYMap:add(x, y, data)
+    self.min_pos.x = math.min(self.min_pos.x, x)
+    self.min_pos.y = math.min(self.min_pos.y, y)
+    self.max_pos.x = math.max(self.max_pos.x, x)
+    self.max_pos.y = math.max(self.max_pos.y, y)
+
     data = data or true
 
     if (not self.storage[x]) then

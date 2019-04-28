@@ -138,6 +138,13 @@ function game:getDistanceToObstacle(angle)
         local x_i = math.floor(current_pos.x)
         local y_i = math.floor(current_pos.y)
 
+        if not (game.nodes.storage.min_pos.x <= x_i and
+                game.nodes.storage.min_pos.y <= y_i and
+                x_i <= game.nodes.storage.max_pos.x and
+                y_i <= game.nodes.storage.max_pos.y) then
+            return false
+        end
+
         if (angle >= 0 and angle < math.pi/2) then
             local x_a = (x_i + 1)
             local y_a = (y_i + 1)
@@ -218,7 +225,7 @@ function game:getDistanceToObstacle(angle)
 
         table.insert(points, {x=current_pos.x, y=current_pos.y})
 
-        local eps = 0.00000001
+        local eps = 1e-10
         local isWall = game:isWall({x = current_pos.x + eps * math.cos(angle),
                                     y = current_pos.y + eps * math.sin(angle)})
 
