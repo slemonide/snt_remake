@@ -5,6 +5,7 @@ local Nodes = Class{
         self.names = {}
         self.names["stone_brick"] = {
             name = "stone_brick",
+            texture = love.graphics.newImage("assets/wall.png")
         }
     end
 }

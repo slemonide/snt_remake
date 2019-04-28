@@ -15,9 +15,7 @@ function game:init()
     game.sceneCanvas = love.graphics.newCanvas()
     -- textures
     love.graphics.setDefaultFilter("nearest")
-    game.wall = love.graphics.newImage("assets/wall.png")
     game.wall_quad = love.graphics.newQuad(0, 0, 1, 64, 64, 64)
-
 end
 
 function game:update_scene(w,h)
@@ -27,7 +25,7 @@ function game:update_scene(w,h)
     for i=1,w do
         local rot = game.player.rot + (i - w/2) * CONFIG.FOV/w
 
-        local dist, side, points, offset = game:getDistanceToObstacle(rot)
+        local dist, side, points, offset, node = game:getDistanceToObstacle(rot)
         if dist then
             -- only difference from before is a correction to dist:
             if not CONFIG.FISH_EYE then
@@ -42,8 +40,8 @@ function game:update_scene(w,h)
             end
             if CONFIG.TEXTURES then
                 game.wall_quad:setViewport(64*(offset % 1),0,1,64)
-                love.graphics.draw(game.wall, game.wall_quad, i,
-                                game.player.z + h/2 - 10000/dist/30, 0, 1, 310/dist/30, 0, 0)
+                love.graphics.draw(node.texture, game.wall_quad, i,
+                                   game.player.z + h/2 - 10000/dist/30, 0, 1, 310/dist/30, 0, 0)
             else
                 love.graphics.line(i, game.player.z + h/2 - 10000/dist/30, i, game.player.z + h/2 + 10000/dist/30)
             end
@@ -226,11 +224,13 @@ function game:getDistanceToObstacle(angle)
         table.insert(points, {x=current_pos.x, y=current_pos.y})
 
         local eps = 1e-10
-        local isWall = game:isWall({x = current_pos.x + eps * math.cos(angle),
-                                    y = current_pos.y + eps * math.sin(angle)})
 
-        local isMirror = game:isMirror({x = current_pos.x + eps * math.cos(angle),
-                                        y = current_pos.y + eps * math.sin(angle)})
+        local pos = {x = current_pos.x + eps * math.cos(angle),
+                     y = current_pos.y + eps * math.sin(angle)}
+
+        local isWall = game:isWall(pos)
+        local isMirror = game:isMirror(pos)
+
         if isMirror then
             local wallX = math.floor(current_pos.x)
             local wallY = math.floor(current_pos.y)
@@ -286,7 +286,7 @@ function game:getDistanceToObstacle(angle)
 
             local offset = math.sqrt(y_l^2 + x_l^2)
 
-            return distance, side, points, offset
+            return distance, side, points, offset, game.nodes:get(pos.x,pos.y)
         end
     end
 

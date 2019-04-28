@@ -45,7 +45,7 @@ function XYMap:forEach(fun)
     end
 end
 
-function XYMap:contains(x, y)
+local function quantize(x,y)
     if not y then
         local pos = x
         y = pos.y
@@ -55,10 +55,18 @@ function XYMap:contains(x, y)
     x = math.floor(x)
     y = math.floor(y)
 
+    return x, y
+end
+
+function XYMap:contains(x, y)
+    local x, y = quantize(x, y)
+
     return (self.storage[x] or {})[y]
 end
 
 function XYMap:get(x, y)
+    local x, y = quantize(x, y)
+
     return (self.storage[x] and self.storage[x][y] or false)
 end
 
