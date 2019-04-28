@@ -95,23 +95,25 @@ function MiniMap:render()
 
             dist, side, points = self.game:getDistanceToObstacle(rot)
 
-            line_points = {}
-            
-            table.insert(line_points, self.game.player.x)
-            table.insert(line_points, self.game.player.y)
+            if dist then
+                line_points = {}
+                
+                table.insert(line_points, self.game.player.x)
+                table.insert(line_points, self.game.player.y)
 
-            for _, point in ipairs(points) do
-                table.insert(line_points, point.x)
-                table.insert(line_points, point.y)
-            end
+                for _, point in ipairs(points) do
+                    table.insert(line_points, point.x)
+                    table.insert(line_points, point.y)
+                end
 
 
-            love.graphics.setColor(0, 1, 0)
-            love.graphics.line(line_points)
+                love.graphics.setColor(0, 1, 0)
+                love.graphics.line(line_points)
 
-            for _, point in ipairs(points) do
-                love.graphics.setColor(1,0,0)
-                love.graphics.circle("fill", point.x, point.y, 0.1)
+                for _, point in ipairs(points) do
+                    love.graphics.setColor(1,0,0)
+                    love.graphics.circle("fill", point.x, point.y, 0.1)
+                end
             end
         end
     end

@@ -12,3 +12,4 @@ Controls:
 Minimap:
 
 Use mouse buttons to edit the map
+* left shift  and - or = resize map

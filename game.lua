@@ -2,14 +2,14 @@ local game = {}
 
 function game:init()
     local Player = require("player")
-    game.player = Player(game)
     local Nodes = require("nodes")
-    game.nodes = Nodes()
     local MapLoader = require("map_loader")
+    local MiniMap = require("minimap")
+
+    game.player = Player(game)
+    game.nodes = Nodes()
     game.map_loader = MapLoader(game)
     game.map_loader:load_map("level1.map")
-
-    local MiniMap = require("minimap")
     game.minimap = MiniMap(game)
 
     game.sceneCanvas = love.graphics.newCanvas()
@@ -28,23 +28,25 @@ function game:update_scene(w,h)
         local rot = game.player.rot + (i - w/2) * CONFIG.FOV/w
 
         local dist, side, points, offset = game:getDistanceToObstacle(rot)
-        -- only difference from before is a correction to dist:
-        if not CONFIG.FISH_EYE then
-            local ang = (i - w/2) * CONFIG.FOV/w
-            dist = dist * math.cos(ang)
-        end
-        local shadow = math.min(dist/CONFIG.SHADOW_SIZE/10,0.5)
-        if side == "x" then
-            love.graphics.setColor(0.6-shadow,0.6-shadow,0.6-shadow)
-        elseif side == "y" then
-            love.graphics.setColor(0.55-shadow, 0.55-shadow,0.55-shadow)
-        end
-        if CONFIG.TEXTURES then
-            game.wall_quad:setViewport(64*(offset % 1),0,1,64)
-            love.graphics.draw(game.wall, game.wall_quad, i,
-                            game.player.z + h/2 - 10000/dist/30, 0, 1, 310/dist/30, 0, 0)
-        else
-            love.graphics.line(i, game.player.z + h/2 - 10000/dist/30, i, game.player.z + h/2 + 10000/dist/30)
+        if dist then
+            -- only difference from before is a correction to dist:
+            if not CONFIG.FISH_EYE then
+                local ang = (i - w/2) * CONFIG.FOV/w
+                dist = dist * math.cos(ang)
+            end
+            local shadow = math.min(dist/CONFIG.SHADOW_SIZE/10,0.5)
+            if side == "px" or side == "nx" then
+                love.graphics.setColor(0.6-shadow,0.6-shadow,0.6-shadow)
+            elseif side == "py" or side == "ny" then
+                love.graphics.setColor(0.5-shadow, 0.5-shadow,0.5-shadow)
+            end
+            if CONFIG.TEXTURES then
+                game.wall_quad:setViewport(64*(offset % 1),0,1,64)
+                love.graphics.draw(game.wall, game.wall_quad, i,
+                                game.player.z + h/2 - 10000/dist/30, 0, 1, 310/dist/30, 0, 0)
+            else
+                love.graphics.line(i, game.player.z + h/2 - 10000/dist/30, i, game.player.z + h/2 + 10000/dist/30)
+            end
         end
     end
 
@@ -247,43 +249,41 @@ function game:getDistanceToObstacle(angle)
             
             angle = angle % (math.pi * 2)
         elseif isWall then
-            local wallX = math.floor(current_pos.x)
-            local wallY = math.floor(current_pos.y)
-            local dx = current_pos.x - wallX + 1/2
-            local dy = current_pos.y - wallY - 1/2
+            local side = "px" -- default side
 
-            local angle_in = math.atan(dy/dx) + math.pi/4
+            -- compute side
+            local x_l = current_pos.x % 1
+            local y_l = current_pos.y % 1
 
-            angle_in = angle_in % (2*math.pi)
+            --[[
+                Node and its sides:
+                     ny
+                    -----
+                    |\ /|
+                 nx | x | px
+                    |/ \|
+                    -----
+                     py
+                Top left side is the origin, coordiante system is (x_l, y_l)
+            --]]
 
-
-            local x_i = math.floor(current_pos.x)
-            local y_i = math.floor(current_pos.y)
-
-            local offset = 0
-
-            if (angle_in >= 0 and angle_in < math.pi/2) then
-                offset = math.sqrt((x_i - current_pos.x)^2
-                                 + (y_i - current_pos.y)^2)
-            elseif (angle_in >= math.pi/2 and angle_in < math.pi) then
-                offset = math.sqrt(((x_i+1) - current_pos.x)^2
-                                 + ((y_i) - current_pos.y)^2)
-            elseif (angle_in >= math.pi * 3/2 and angle_in < math.pi * 2) then
-                offset = math.sqrt(((x_i+1) - current_pos.x)^2
-                                 + ((y_i) - current_pos.y)^2)
-            else
-                print("Unknown angle: " .. angle_in)
+            if     (y_l > 1 - x_l and y_l > x_l) then
+                side = "py"
+            elseif (y_l < 1 - x_l and y_l < x_l) then
+                side = "ny"
+            elseif (y_l > 1 - x_l and y_l < x_l) then
+                side = "px"
+            elseif (y_l < 1 - x_l and y_l > x_l) then
+                side = "nx"
             end
 
-            if math.tan(angle_in) > 0 then
-                return distance, "x", points, offset
-            else
-                return distance, "y", points, offset
-            end
+            local offset = math.sqrt(y_l^2 + x_l^2)
+
+            return distance, side, points, offset
         end
     end
 
-    return distance, "x", points, 0
+    return false -- didn't find anything :(
 end
 
 function game:isWall(pos)
