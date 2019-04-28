@@ -9,10 +9,14 @@ function MapLoader:load_map(filename)
     for line in love.filesystem.lines("maps/" .. filename) do
         for i = 1, string.len(line) do
             local char = string.sub(line, i, i)
+            local x = i
+            local y = line_count
             if char == "1" then
-                local x = i
-                local y = line_count
                 self.game.nodes:addNode(x, y, "stone_brick")
+            elseif char == "2" then
+                self.game.nodes:addNode(x, y, "matrix_wall")
+            elseif char == "3" then
+                self.game.nodes:addNode(x, y, "arrow")
             end
         end
 

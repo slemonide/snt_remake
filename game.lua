@@ -14,7 +14,6 @@ function game:init()
 
     game.sceneCanvas = love.graphics.newCanvas()
     -- textures
-    love.graphics.setDefaultFilter("nearest")
     game.wall_quad = love.graphics.newQuad(0, 0, 1, 64, 64, 64)
 end
 

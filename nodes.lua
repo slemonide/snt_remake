@@ -5,7 +5,15 @@ local Nodes = Class{
         self.names = {}
         self.names["stone_brick"] = {
             name = "stone_brick",
-            texture = love.graphics.newImage("assets/wall.png")
+            texture = love.graphics.newImage("assets/stone_brick.png")
+        }
+        self.names["matrix_wall"] = {
+            name = "matrix_wall",
+            texture = love.graphics.newImage("assets/matrix_wall.png")
+        }
+        self.names["arrow"] = {
+            name = "arrow",
+            texture = love.graphics.newImage("assets/arrow.png")
         }
     end
 }
