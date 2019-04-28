@@ -38,7 +38,7 @@ function game:update_scene(w,h)
             if side == "px" or side == "nx" then
                 love.graphics.setColor(0.6-shadow,0.6-shadow,0.6-shadow)
             elseif side == "py" or side == "ny" then
-                love.graphics.setColor(0.5-shadow, 0.5-shadow,0.5-shadow)
+                love.graphics.setColor(0.54-shadow, 0.54-shadow,0.54-shadow)
             end
             if CONFIG.TEXTURES then
                 game.wall_quad:setViewport(64*(offset % 1),0,1,64)

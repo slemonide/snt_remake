@@ -2,6 +2,13 @@ local MiniMap = Class{
     init = function(self, game)
         self.game = game
         self.selected_node = false -- false or position in the form {x=number, y=number}
+        local size = CONFIG.MAP_SIZE * 2 * CONFIG.MAP_NODE_SIZE
+        self.canvas = love.graphics.newCanvas(size, size)
+        self.quad = love.graphics.newQuad(CONFIG.MAP_NODE_SIZE,
+                                          CONFIG.MAP_NODE_SIZE,
+                                          size - CONFIG.MAP_NODE_SIZE,
+                                          size - CONFIG.MAP_NODE_SIZE,
+                                          size, size)
     end
 }
 
@@ -10,7 +17,7 @@ function MiniMap:update(dt)
     local x, y = love.mouse.getPosition()
 
     local x_i = math.floor(x / CONFIG.MAP_NODE_SIZE + self.game.player.x % 1) - 1
-    local y_i = math.floor(y / CONFIG.MAP_NODE_SIZE + self.game.player.y % 1)
+    local y_i = math.floor(y / CONFIG.MAP_NODE_SIZE + self.game.player.y % 1) - 1
 
     if x_i <= CONFIG.MAP_SIZE * 2 and y_i <= CONFIG.MAP_SIZE * 2 then
         self.selected_node = {x = x_i, y = y_i}
@@ -45,12 +52,14 @@ function MiniMap:update(dt)
 
 end
 
-function MiniMap:render()
+function MiniMap:update_canvas()
+    love.graphics.setCanvas(self.canvas)
+    love.graphics.clear()
     love.graphics.push()
     love.graphics.scale(CONFIG.MAP_NODE_SIZE,
                         CONFIG.MAP_NODE_SIZE)
     love.graphics.setLineWidth(1/CONFIG.MAP_NODE_SIZE)
-    love.graphics.translate(1+CONFIG.MAP_SIZE-self.game.player.x, CONFIG.MAP_SIZE-self.game.player.y)
+    love.graphics.translate(1+CONFIG.MAP_SIZE-self.game.player.x, 1+CONFIG.MAP_SIZE-self.game.player.y)
 
     x_i = math.floor(self.game.player.x)
     y_i = math.floor(self.game.player.y)
@@ -118,6 +127,14 @@ function MiniMap:render()
         end
     end
     love.graphics.pop()
+    love.graphics.setCanvas()
+end
+
+function MiniMap:render()
+    self:update_canvas()
+
+    love.graphics.setColor(1,1,1)
+    love.graphics.draw(self.canvas, self.quad, CONFIG.MAP_NODE_SIZE, CONFIG.MAP_NODE_SIZE)
 end
 
 return MiniMap
