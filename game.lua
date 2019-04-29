@@ -44,6 +44,23 @@ function game:update_scene(w,h)
             else
                 love.graphics.line(i, game.player.z + h/2 - 10000/dist/30, i, game.player.z + h/2 + 10000/dist/30)
             end
+            -- draw floor
+            love.graphics.setColor(0.2,0.8,0.3)
+            love.graphics.line(i, game.player.z + h/2 + 10000/dist/30, i, h)
+            -- draw ceiling
+            love.graphics.setColor(0.9,0.8,0.9)
+            love.graphics.line(i, game.player.z + h/2 - 10000/dist/30, i, 0)
+
+            -- draw node borders
+            love.graphics.setColor(1,0,0)
+            for _, point in ipairs(points) do
+                local point_dist = math.sqrt((game.player.x - point.x)^2 +
+                                             (game.player.y - point.y)^2)
+                -- TODO:finish
+                --local screen_y = point_dist / dist * (game.player.z + h/2 - 10000/dist/30)
+                --local screen_y = math.atan(point_dist / dist) * (game.player.z + h/2 - 10000/dist/30)
+                --love.graphics.points(i, screen_y)
+            end
         end
     end
 
@@ -75,7 +92,7 @@ function game:render_scene(w,h)
     game:update_scene(w,h)
     
     love.graphics.setColor(1,1,1)
-    love.graphics.draw(game.sceneCanvas, 0,0)
+    love.graphics.draw(game.sceneCanvas, 0,0,0,1,1)
 end
 
 function game:draw()
@@ -306,7 +323,12 @@ function game:keypressed(key)
     elseif key == "f" then
         CONFIG.FISH_EYE = not CONFIG.FISH_EYE
     elseif key == "tab" then
-        CONFIG.DISPLAY_MAP = not CONFIG.DISPLAY_MAP
+        if love.keyboard.isDown("lshift") then
+            CONFIG.EDITOR = not CONFIG.EDITOR
+            game.minimap:switch_editor()
+        else
+            CONFIG.DISPLAY_MAP = not CONFIG.DISPLAY_MAP
+        end
     elseif key == "t" then
         CONFIG.TEXTURES = not CONFIG.TEXTURES
     end

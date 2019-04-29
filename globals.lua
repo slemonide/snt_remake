@@ -15,6 +15,7 @@ eps = 0.0001 -- just a small number
 CONFIG = {
     NODE_SIZE = 30, -- 15
     MAP_NODE_SIZE = 10,
+    EDITOR_NODE_SIZE = 30,
     MAP_SIZE = 20,
     SHADOW_SIZE = 200/30,
     PLAYER_SPEED = 2.5,
@@ -24,6 +25,7 @@ CONFIG = {
     FOV = math.pi / 180 * 74,
     FOV_SPEED = 100 / 180 * math.pi,
     DISPLAY_MAP = false,
+    EDITOR = false,
     MAP_NUM_RAYS = 5,
 
     FISH_EYE = false,

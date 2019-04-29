@@ -2,15 +2,34 @@ local MiniMap = Class{
     init = function(self, game)
         self.game = game
         self.selected_node = false -- false or position in the form {x=number, y=number}
-        local size = CONFIG.MAP_SIZE * 2 * CONFIG.MAP_NODE_SIZE
-        self.canvas = love.graphics.newCanvas(size, size)
-        self.quad = love.graphics.newQuad(CONFIG.MAP_NODE_SIZE,
-                                          CONFIG.MAP_NODE_SIZE,
-                                          size - CONFIG.MAP_NODE_SIZE,
-                                          size - CONFIG.MAP_NODE_SIZE,
-                                          size, size)
+        self.map_h = CONFIG.MAP_SIZE * 2
+        self.map_w = CONFIG.MAP_SIZE * 2
+        self.node_size = CONFIG.MAP_NODE_SIZE
+        self:init_canvas()
     end
 }
+
+function MiniMap:init_canvas()
+    local sizex = self.map_w * self.node_size
+    local sizey = self.map_h * self.node_size
+
+    self.canvas = love.graphics.newCanvas(sizex, sizey)
+    self.quad = love.graphics.newQuad(self.node_size,
+                                      self.node_size,
+                                      sizex - self.node_size,
+                                      sizey - self.node_size,
+                                      sizex, sizey)
+
+end
+
+function MiniMap:switch_editor()
+    if CONFIG.EDITOR then
+        self.node_size = CONFIG.EDITOR_NODE_SIZE
+    else
+        self.node_size = CONFIG.MAP_NODE_SIZE
+    end
+    self:init_canvas()
+end
 
 function MiniMap:update(dt)
     -- active node
