@@ -2,16 +2,16 @@ local MiniMap = Class{
     init = function(self, game)
         self.game = game
         self.selected_node = false -- false or position in the form {x=number, y=number}
-        self.map_h = CONFIG.MAP_SIZE * 2
-        self.map_w = CONFIG.MAP_SIZE * 2
+        self.map_h = CONFIG.MAP_SIZE -- actually, half of them
+        self.map_w = CONFIG.MAP_SIZE
         self.node_size = CONFIG.MAP_NODE_SIZE
         self:init_canvas()
     end
 }
 
 function MiniMap:init_canvas()
-    local sizex = self.map_w * self.node_size
-    local sizey = self.map_h * self.node_size
+    local sizex = self.map_w * self.node_size * 2
+    local sizey = self.map_h * self.node_size * 2
 
     self.canvas = love.graphics.newCanvas(sizex, sizey)
     self.quad = love.graphics.newQuad(self.node_size,
@@ -25,8 +25,15 @@ end
 function MiniMap:switch_editor()
     if CONFIG.EDITOR then
         self.node_size = CONFIG.EDITOR_NODE_SIZE
+
+        local width, height = love.graphics.getDimensions()
+
+        self.map_h = math.floor(height/self.node_size/2)
+        self.map_w = math.floor(width/self.node_size/2)
     else
         self.node_size = CONFIG.MAP_NODE_SIZE
+        self.map_h = CONFIG.MAP_SIZE
+        self.map_w = CONFIG.MAP_SIZE
     end
     self:init_canvas()
 end
@@ -35,17 +42,17 @@ function MiniMap:update(dt)
     -- active node
     local x, y = love.mouse.getPosition()
 
-    local x_i = math.floor(x / CONFIG.MAP_NODE_SIZE + self.game.player.x % 1) - 1
-    local y_i = math.floor(y / CONFIG.MAP_NODE_SIZE + self.game.player.y % 1) - 1
+    local x_i = math.floor(x / self.node_size + self.game.player.x % 1) - 1
+    local y_i = math.floor(y / self.node_size + self.game.player.y % 1) - 1
 
-    if x_i <= CONFIG.MAP_SIZE * 2 and y_i <= CONFIG.MAP_SIZE * 2 then
+    if x_i <= self.map_w * 2 and y_i <= self.map_h * 2 then
         self.selected_node = {x = x_i, y = y_i}
 
         local x_p = math.floor(self.game.player.x)
         local y_p = math.floor(self.game.player.y)
 
-        local x_w = x_p - CONFIG.MAP_SIZE + x_i
-        local y_w = y_p - CONFIG.MAP_SIZE + y_i
+        local x_w = x_p - self.map_w + x_i
+        local y_w = y_p - self.map_h + y_i
 
         if love.mouse.isDown(1) then -- primary button (usually left)
             self.game.nodes:addNode(x_w,y_w, "stone_brick")
@@ -75,18 +82,18 @@ function MiniMap:update_canvas()
     love.graphics.setCanvas(self.canvas)
     love.graphics.clear()
     love.graphics.push()
-    love.graphics.scale(CONFIG.MAP_NODE_SIZE,
-                        CONFIG.MAP_NODE_SIZE)
-    love.graphics.setLineWidth(1/CONFIG.MAP_NODE_SIZE)
-    love.graphics.translate(1+CONFIG.MAP_SIZE-self.game.player.x, 1+CONFIG.MAP_SIZE-self.game.player.y)
+    love.graphics.scale(self.node_size,
+                        self.node_size)
+    love.graphics.setLineWidth(1/self.node_size)
+    love.graphics.translate(1+self.map_w-self.game.player.x, 1+self.map_h-self.game.player.y)
 
     x_i = math.floor(self.game.player.x)
     y_i = math.floor(self.game.player.y)
 
-    for xj=0,CONFIG.MAP_SIZE*2 do
-        for yj=0,CONFIG.MAP_SIZE*2 do
-            x = x_i - CONFIG.MAP_SIZE + xj
-            y = y_i - CONFIG.MAP_SIZE + yj
+    for xj=0,self.map_w*2 do
+        for yj=0,self.map_h*2 do
+            x = x_i - self.map_w + xj
+            y = y_i - self.map_h + yj
             local v = 0
             if self.game.nodes:contains(x,y) then
                 v = 1
@@ -153,7 +160,7 @@ function MiniMap:render()
     self:update_canvas()
 
     love.graphics.setColor(1,1,1)
-    love.graphics.draw(self.canvas, self.quad, CONFIG.MAP_NODE_SIZE, CONFIG.MAP_NODE_SIZE)
+    love.graphics.draw(self.canvas, self.quad, self.node_size, self.node_size)
 end
 
 return MiniMap
