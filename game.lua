@@ -61,6 +61,13 @@ function game:update_scene(w,h)
                 --local screen_y = math.atan(point_dist / dist) * (game.player.z + h/2 - 10000/dist/30)
                 --love.graphics.points(i, screen_y)
             end
+        else
+            -- draw floor
+            love.graphics.setColor(0.2,0.8,0.3)
+            love.graphics.line(i, game.player.z + h/2, i, h)
+            -- draw ceiling
+            love.graphics.setColor(0.9,0.8,0.9)
+            love.graphics.line(i, game.player.z + h/2, i, 0)
         end
     end
 
@@ -302,7 +309,7 @@ function game:getDistanceToObstacle(angle)
 
             local offset = math.sqrt(y_l^2 + x_l^2)
 
-            return distance, side, points, offset, game.nodes:get(pos.x,pos.y)
+            return distance, side, points, offset, game.nodes:get(pos.x,pos.y), pos
         end
     end
 

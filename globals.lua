@@ -24,8 +24,8 @@ CONFIG = {
     -- 4 * math.pi
     FOV = math.pi / 180 * 74,
     FOV_SPEED = 100 / 180 * math.pi,
-    DISPLAY_MAP = false,
-    EDITOR = false,
+    DISPLAY_MAP = true, -- false
+    EDITOR = true, -- false
     MAP_NUM_RAYS = 5,
 
     FISH_EYE = false,

@@ -1,10 +1,10 @@
+local XYMap = require('xy_map')
+
 local MiniMap = Class{
     init = function(self, game)
         self.game = game
         self.selected_node = false -- false or position in the form {x=number, y=number}
-        self.map_h = CONFIG.MAP_SIZE -- actually, half of them
-        self.map_w = CONFIG.MAP_SIZE
-        self.node_size = CONFIG.MAP_NODE_SIZE
+        self:switch_editor()
         self:init_canvas()
     end
 }
@@ -28,8 +28,8 @@ function MiniMap:switch_editor()
 
         local width, height = love.graphics.getDimensions()
 
-        self.map_h = math.floor(height/self.node_size/2)
-        self.map_w = math.floor(width/self.node_size/2)
+        self.map_h = math.floor(height/self.node_size/2) - 1
+        self.map_w = math.floor(width/self.node_size/2) - 1
     else
         self.node_size = CONFIG.MAP_NODE_SIZE
         self.map_h = CONFIG.MAP_SIZE
@@ -87,8 +87,48 @@ function MiniMap:update_canvas()
     love.graphics.setLineWidth(1/self.node_size)
     love.graphics.translate(1+self.map_w-self.game.player.x, 1+self.map_h-self.game.player.y)
 
-    x_i = math.floor(self.game.player.x)
-    y_i = math.floor(self.game.player.y)
+    -- first draw rays, and save visile nodes to be highlighted later
+    local visible_nodes = XYMap()
+    if CONFIG.MAP_NUM_RAYS ~= 0 then
+        for i=-CONFIG.MAP_NUM_RAYS,CONFIG.MAP_NUM_RAYS do
+            local rot = self.game.player.rot + i * CONFIG.FOV/(2*CONFIG.MAP_NUM_RAYS)
+            local dist, side, points, offset, node, pos = self.game:getDistanceToObstacle(rot)
+
+            if dist then
+                line_points = {}
+                
+                table.insert(line_points, self.game.player.x)
+                table.insert(line_points, self.game.player.y)
+
+                for _, point in ipairs(points) do
+                    table.insert(line_points, point.x)
+                    table.insert(line_points, point.y)
+                end
+
+
+                love.graphics.setColor(0, 1, 0)
+                love.graphics.line(line_points)
+
+                for _, point in ipairs(points) do
+                    love.graphics.setColor(1,0,0)
+                    love.graphics.circle("fill", point.x, point.y, 0.1)
+                    visible_nodes:add(math.floor(point.x),math.floor(point.y),false)
+                end
+
+                visible_nodes:add(math.floor(pos.x),math.floor(pos.y),node)
+            end
+            --[[
+            for _, pos in ipairs(visible_nodes) do
+                love.graphics.setColor(0, 0, 1, 0.5)
+                love.graphics.rectangle("fill", pos.x, pos.y, 1, 1)
+            end
+            --]]
+        end
+    end
+
+    -- now draw nodes
+    local x_i = math.floor(self.game.player.x)
+    local y_i = math.floor(self.game.player.y)
 
     for xj=0,self.map_w*2 do
         for yj=0,self.map_h*2 do
@@ -113,6 +153,14 @@ function MiniMap:update_canvas()
             else
                 love.graphics.setColor(1, 1, 1)
             end
+            if visible_nodes:contains(x,y) then
+                if visible_nodes:get(x,y) then
+                    love.graphics.setColor(0.5, 1, 0.5, 0.4)
+                else
+                    love.graphics.setColor(1, 0.5, 0.5, 0.6)
+                end
+                love.graphics.rectangle("fill", x, y, 1, 1)
+            end
             love.graphics.rectangle("line", x, y, 1, 1)
         end
     end
@@ -124,34 +172,7 @@ function MiniMap:update_canvas()
     love.graphics.setColor(0.42, 0.63, 0.05)
     love.graphics.circle("fill", self.game.player.x, self.game.player.y, 1/4)
 
-    if CONFIG.MAP_NUM_RAYS ~= 0 then
-        for i=-CONFIG.MAP_NUM_RAYS,CONFIG.MAP_NUM_RAYS do
-            local rot = self.game.player.rot + i * CONFIG.FOV/(2*CONFIG.MAP_NUM_RAYS)
 
-            dist, side, points = self.game:getDistanceToObstacle(rot)
-
-            if dist then
-                line_points = {}
-                
-                table.insert(line_points, self.game.player.x)
-                table.insert(line_points, self.game.player.y)
-
-                for _, point in ipairs(points) do
-                    table.insert(line_points, point.x)
-                    table.insert(line_points, point.y)
-                end
-
-
-                love.graphics.setColor(0, 1, 0)
-                love.graphics.line(line_points)
-
-                for _, point in ipairs(points) do
-                    love.graphics.setColor(1,0,0)
-                    love.graphics.circle("fill", point.x, point.y, 0.1)
-                end
-            end
-        end
-    end
     love.graphics.pop()
     love.graphics.setCanvas()
 end
